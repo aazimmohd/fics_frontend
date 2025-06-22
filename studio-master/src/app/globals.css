@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 60% 99%;
+    --foreground: 220 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 15%;
+
+    --primary: 210 70% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 20% 94%;
+    --secondary-foreground: 220 25% 15%;
+
+    --muted: 220 20% 94%;
+    --muted-foreground: 220 15% 45%;
+
+    --accent: 220 20% 94%;
+    --accent-foreground: 220 25% 15%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 20% 90%;
+    --input: 220 20% 90%;
+    --ring: 210 70% 50%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar specific theme, inherits from above or can be overridden */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 25% 25%; 
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-border: hsl(var(--border));
+    --sidebar-ring: hsl(var(--ring));
+  }
+
+  .dark {
+    --background: 220 30% 10%; /* Very dark, slightly desaturated blue */
+    --foreground: 210 30% 95%; /* Light, cool gray for text */
+    --card: 220 30% 13%; /* Slightly lighter than background */
+    --card-foreground: 210 30% 95%;
+    --popover: 220 30% 13%;
+    --popover-foreground: 210 30% 95%;
+    --primary: 250 70% 65%; /* Vibrant Indigo/Purple */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 200 70% 50%; /* Bright Cyan/Blue */
+    --secondary-foreground: 0 0% 100%; /* White */
+    --muted: 220 20% 20%; /* Darker gray-blue */
+    --muted-foreground: 210 20% 65%; /* Lighter gray-blue for muted text */
+    --accent: 38 75% 65%; /* Slightly brighter amber/gold for dark backgrounds */
+    --accent-foreground: 38 90% 15%; /* Dark, rich brown for contrast */
+    --destructive: 0 70% 55%; /* Bright Red */
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 20% 25%; /* Subtle border color */
+    --input: 220 25% 18%; /* Dark input background */
+    --input-border: 220 20% 30%;
+    --ring: 250 70% 75%; /* Lighter primary for focus rings */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    --sidebar-background: 220 30% 8%; /* Even darker for sidebar in dark mode */
+    --sidebar-foreground: 210 30% 90%;
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
+    --sidebar-accent: hsl(var(--accent));
+    --sidebar-accent-foreground: hsl(var(--accent-foreground));
+    --sidebar-border: hsl(var(--border));
+    --sidebar-ring: hsl(var(--ring));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
+}
+
+/* Custom input style to use --input-border */
+@layer components {
+  .input {
+    @apply border-input-border;
+  }
+}
