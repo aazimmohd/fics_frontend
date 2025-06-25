@@ -80,6 +80,13 @@ export function WorkflowNodeConfigPanel({ node, onClose, onUpdateNodeData }: Wor
       } else if (node.type === 'condition' && !initialData.logic) {
         initialData.logic = { variable: '', operator: 'contains', value: '' };
       }
+      // NEW: Initialization for Firestore nodes
+      if (node.type === 'getFirestoreDocument' && !initialData.firestore) {
+        initialData.firestore = { collectionPath: '', documentId: '' };
+      }
+      if (node.type === 'updateFirestoreDocument' && !initialData.firestore) {
+        initialData.firestore = { collectionPath: '', documentId: '', fieldsToUpdate: [] };
+      }
       setFormData(initialData);
     } else {
       setFormData(null);
@@ -195,6 +202,54 @@ export function WorkflowNodeConfigPanel({ node, onClose, onUpdateNodeData }: Wor
 
   const handleLogicSelectChange = (value: string) => {
     setFormData((prev: Node['data'] | null) => prev ? { ...prev, logic: { ...prev.logic, operator: value } } : null);
+  };
+
+  // --- NEW: Handlers for nested/complex state ---
+  const handleNestedInputChange = (objectName: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev: Node['data'] | null) => prev ? { ...prev, [objectName]: { ...prev[objectName], [name]: value } } : null);
+  };
+
+  const handleNestedSelectChange = (objectName: string, fieldName: string, value: string) => {
+    setFormData((prev: Node['data'] | null) => prev ? { ...prev, [objectName]: { ...prev[objectName], [fieldName]: value } } : null);
+  };
+
+  // Special handlers for Firestore nested arrays
+  const handleFirestoreFieldArrayChange = (index: number, field: 'key' | 'value', value: string) => {
+    if (!formData?.firestore?.fieldsToUpdate) return;
+    const newFields = [...formData.firestore.fieldsToUpdate];
+    newFields[index][field] = value;
+    setFormData({ 
+      ...formData, 
+      firestore: { 
+        ...formData.firestore, 
+        fieldsToUpdate: newFields 
+      } 
+    });
+  };
+
+  const addFirestoreField = () => {
+    if (!formData?.firestore) return;
+    const newFields = [...(formData.firestore.fieldsToUpdate || []), { key: '', value: '' }];
+    setFormData({ 
+      ...formData, 
+      firestore: { 
+        ...formData.firestore, 
+        fieldsToUpdate: newFields 
+      } 
+    });
+  };
+
+  const removeFirestoreField = (index: number) => {
+    if (!formData?.firestore?.fieldsToUpdate) return;
+    const newFields = formData.firestore.fieldsToUpdate.filter((_: any, i: number) => i !== index);
+    setFormData({ 
+      ...formData, 
+      firestore: { 
+        ...formData.firestore, 
+        fieldsToUpdate: newFields 
+      } 
+    });
   };
 
   return (
@@ -503,6 +558,88 @@ export function WorkflowNodeConfigPanel({ node, onClose, onUpdateNodeData }: Wor
                 <div>
                   <Label htmlFor="logicValue" className="text-sm font-medium">Value</Label>
                   <Input name="value" value={formData.logic?.value || ''} onChange={handleLogicChange} placeholder="Value to compare against" className="mt-1" />
+                </div>
+              </div>
+            )}
+            {node.type === 'getFirestoreDocument' && (
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Collection Path</Label>
+                  <Input 
+                    name="collectionPath" 
+                    value={formData.firestore?.collectionPath || ''} 
+                    onChange={(e) => handleNestedInputChange('firestore', e)} 
+                    placeholder="e.g., users" 
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Document ID</Label>
+                  <Input 
+                    name="documentId" 
+                    value={formData.firestore?.documentId || ''} 
+                    onChange={(e) => handleNestedInputChange('firestore', e)} 
+                    placeholder="e.g., {{form.user_id}}" 
+                  />
+                </div>
+              </div>
+            )}
+            {node.type === 'updateFirestoreDocument' && (
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Collection Path</Label>
+                  <Input 
+                    name="collectionPath" 
+                    value={formData.firestore?.collectionPath || ''} 
+                    onChange={(e) => handleNestedInputChange('firestore', e)} 
+                    placeholder="e.g., tickets" 
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Document ID</Label>
+                  <Input 
+                    name="documentId" 
+                    value={formData.firestore?.documentId || ''} 
+                    onChange={(e) => handleNestedInputChange('firestore', e)} 
+                    placeholder="e.g., {{form.ticket_id}}" 
+                  />
+                </div>
+                <div className="pt-2">
+                  <h4 className="text-xs font-semibold uppercase text-muted-foreground">Fields to Update</h4>
+                  <div className="space-y-2 mt-2 border-l-2 pl-3 ml-1">
+                    {formData.firestore?.fieldsToUpdate?.map((field: {key: string; value: string}, index: number) => (
+                      <div key={index} className="flex items-center gap-2 p-2 rounded-md bg-background">
+                        <div className="flex-grow space-y-1">
+                          <Input 
+                            placeholder="Field Key" 
+                            value={field.key} 
+                            onChange={(e) => handleFirestoreFieldArrayChange(index, 'key', e.target.value)} 
+                          />
+                          <Input 
+                            placeholder="New Value" 
+                            value={field.value} 
+                            onChange={(e) => handleFirestoreFieldArrayChange(index, 'value', e.target.value)} 
+                          />
+                        </div>
+                        <Button 
+                          type="button" 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => removeFirestoreField(index)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2" 
+                      onClick={addFirestoreField}
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />Add Field
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

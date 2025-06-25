@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Loader2, AlertTriangle, Database, Trash2, Edit, PlusCircle, KeyRound } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, AlertTriangle, Database, Trash2, Edit, PlusCircle, KeyRound, Flame } from "lucide-react";
 
 // --- INTERFACES & API ---
 interface DbConfig { id: string; config_name: string; db_type: string; host: string; username: string; database_name: string; }
@@ -67,6 +68,7 @@ const AddNewConnectionForm: React.FC<AddNewConnectionFormProps> = ({ onSave, onC
 const availableIntegrations = [
   { name: "SendGrid", description: "Use SendGrid for sending emails via workflows.", icon: KeyRound },
   { name: "OpenAI", description: "Connect your OpenAI account for advanced AI features.", icon: KeyRound },
+  { name: "Firebase", description: "Connect to Firestore for data operations.", icon: Flame },
 ];
 
 export default function SettingsPage() {
@@ -267,15 +269,30 @@ export default function SettingsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="apiKey">API Key for {currentCredential?.name}</Label>
-            <Input 
-              id="apiKey" 
-              value={apiKeyValue} 
-              onChange={(e) => setApiKeyValue(e.target.value)} 
-              type="password" 
-              placeholder="Enter your API key..."
-              className="mt-2"
-            />
+            <Label htmlFor="credentialValue">
+              {currentCredential?.name === 'Firebase' ? 'Service Account JSON Key' : 'API Key'}
+            </Label>
+            <p className="text-xs text-muted-foreground mt-1">
+              {currentCredential?.name === 'Firebase' ? 'Paste the entire content of your service account JSON file.' : 'Paste your secret API key.'}
+            </p>
+            {currentCredential?.name === 'Firebase' ? (
+              <Textarea
+                id="credentialValue"
+                value={apiKeyValue}
+                onChange={(e) => setApiKeyValue(e.target.value)}
+                rows={10}
+                className="font-mono mt-2 bg-background"
+                placeholder='{ "type": "service_account", ... }'
+              />
+            ) : (
+              <Input
+                id="credentialValue"
+                value={apiKeyValue}
+                onChange={(e) => setApiKeyValue(e.target.value)}
+                type="password"
+                className="mt-2 bg-background"
+              />
+            )}
             {currentCredential?.name === 'SendGrid' && (
               <p className="text-xs text-muted-foreground mt-2">
                 Your SendGrid API key should start with "SG." and have at least "Mail Send" permissions.
