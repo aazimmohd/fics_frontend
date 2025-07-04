@@ -183,8 +183,8 @@ export default function SettingsPage() {
                       Connect
                     </Button>
                   )}
-                </div>
-              </div>
+          </div>
+          </div>
             );
           })}
         </CardContent>
@@ -249,7 +249,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* --- GENERAL SETTINGS CARD --- */}
-      <Card className="shadow-lg rounded-lg">
+       <Card className="shadow-lg rounded-lg">
         <CardHeader>
           <CardTitle>General Settings</CardTitle>
           <CardDescription>Application-wide preferences.</CardDescription>

@@ -132,22 +132,22 @@ if (!AllNodeTypes['default']) AllNodeTypes['default'] = IconNode;
 const DndSidebar = ({ onDragStart }: { onDragStart: (event: React.DragEvent<HTMLDivElement>, nodeType: string) => void }) => (
   <aside className="w-72 p-4 border-r bg-card space-y-3 overflow-y-auto">
     <h3 className="text-lg font-semibold flex items-center">
-      <Settings2 className="mr-2 h-5 w-5 text-primary" /> Nodes
-    </h3>
-    {nodeDefinitions.map((nodeDef) => (
-      <div
+        <Settings2 className="mr-2 h-5 w-5 text-primary" /> Nodes
+      </h3>
+      {nodeDefinitions.map((nodeDef) => (
+        <div
         key={nodeDef.type}
         className="p-3 border rounded-lg bg-background hover:shadow-lg transition-shadow cursor-grab"
         onDragStart={(event) => onDragStart(event, nodeDef.type)}
-        draggable
-      >
+          draggable
+        >
         <nodeDef.icon className="h-5 w-5 text-primary mb-2" />
         <p className="font-medium text-sm">{nodeDef.label}</p>
-        <p className="text-xs text-muted-foreground">{nodeDef.description}</p>
-      </div>
-    ))}
-  </aside>
-);
+            <p className="text-xs text-muted-foreground">{nodeDef.description}</p>
+        </div>
+      ))}
+    </aside>
+  );
 
 interface WorkflowBuilderProps {
   initialNodesData?: Node[];
@@ -389,6 +389,9 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
     }));
 
     const definition = { nodes: nodesForApi, edges: edgesForApi };
+    console.log("--- DEBUG: FINAL SAVE PAYLOAD (handleSaveWorkflow) ---");
+    console.log(JSON.stringify(definition, null, 2));
+    console.log("---------------------------------");
 
     if (currentWorkflowId) {
       // If we have an ID, it's an update - save immediately
@@ -426,6 +429,9 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
     }));
 
     const definition = { nodes: nodesForApi, edges: edgesForApi };
+    console.log("--- DEBUG: FINAL SAVE PAYLOAD (handleNameAndSave) ---");
+    console.log(JSON.stringify(definition, null, 2));
+    console.log("---------------------------------");
 
     const workflowPayload: WorkflowCreate = {
       name: name,

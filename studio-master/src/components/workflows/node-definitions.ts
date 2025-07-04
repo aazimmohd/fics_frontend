@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Mail, Database, Webhook, Timer, GitFork, UserCheck, FilePenLine, LogIn, LogOut, ChevronsRight, ClipboardPaste, FileSearch } from "lucide-react";
+import { Mail, Database, Webhook, Timer, GitFork, UserCheck, FilePenLine, LogIn, LogOut, ChevronsRight, ClipboardPaste, FileSearch, UserRoundCheck } from "lucide-react";
 
 export interface NodeDefinition {
   type: string;
@@ -21,6 +21,7 @@ export const nodeDefinitions: NodeDefinition[] = [
   { type: 'delay', label: 'Delay', icon: Timer, description: "Introduce timed delays.", defaultData: { type: 'delay', label: 'Delay', duration: 60, unit: 'seconds' }, isToolNode: true },
   { type: 'condition', label: 'Condition', icon: GitFork, description: "Branch workflows based on conditions.", defaultData: { type: 'condition', label: 'Condition Logic', logic: { variable: '', operator: 'contains', value: '' } }, isToolNode: true },
   { type: 'assignTask', label: 'Assign Task', icon: UserCheck, description: "Assign tasks to members.", defaultData: { type: 'assignTask', label: 'Assign Task', assignee: '' }, isToolNode: true },
+  { type: 'humanTask', label: 'Human Task', icon: UserRoundCheck, description: "Pauses the workflow and assigns a task to a person.", defaultData: { type: 'humanTask', label: 'Manual Approval Step', assignee: '', taskTitle: 'Please review and approve.' }, isToolNode: true },
   { type: 'updateRecord', label: 'Update Record', icon: FilePenLine, description: "Modify data records.", defaultData: { type: 'updateRecord', label: 'Update Record', fieldsToUpdate: [] }, isToolNode: true },
   { type: 'getFirestoreDocument', label: 'Get Firestore Document', icon: FileSearch, description: "Fetch a document from a Firestore collection.", defaultData: { type: 'getFirestoreDocument', label: 'Get Document', collectionPath: '', documentId: '' }, isToolNode: true },
   { type: 'updateFirestoreDocument', label: 'Update Firestore Document', icon: FilePenLine, description: "Create or update a document in a Firestore collection.", defaultData: { type: 'updateFirestoreDocument', label: 'Update Document', collectionPath: '', documentId: '', fieldsToUpdate: [] }, isToolNode: true },

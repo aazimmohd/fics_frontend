@@ -2,8 +2,9 @@
 
 import React, { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { MoreHorizontal } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,10 +58,16 @@ const updateTaskStatusAPI = async ({ taskId, status }: { taskId: string; status:
   return data;
 };
 
+const completeTaskAndResumeWorkflowAPI = async (taskId: string) => {
+  const { data } = await axios.post(`http://127.0.0.1:8000/api/tasks/${taskId}/complete`);
+  return data;
+};
+
 export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [priorityFilter, setPriorityFilter] = useState('All');
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: tasks, isLoading, isError } = useQuery<Task[], Error>({
     queryKey: ['tasks'],
@@ -73,6 +80,19 @@ export default function TasksPage() {
       // Invalidate and refetch tasks after successful update
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
+  });
+
+  const completeTaskMutation = useMutation({
+    mutationFn: completeTaskAndResumeWorkflowAPI,
+    onSuccess: () => {
+      toast({ title: "Task Completed!", description: "The workflow has been resumed." });
+      // Refresh both the tasks list and the trigger runs list
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['triggerRuns'] });
+    },
+    onError: (error: AxiosError) => {
+      toast({ variant: "destructive", title: "Error", description: "Could not complete task or resume workflow." });
+    }
   });
 
   const filteredTasks = useMemo(() => {
@@ -155,10 +175,10 @@ export default function TasksPage() {
                           <DropdownMenuItem>View Details</DropdownMenuItem>
                           <DropdownMenuItem>Edit Task</DropdownMenuItem>
                           <DropdownMenuItem
-                            onSelect={() => updateTaskStatus.mutate({ taskId: task.id, status: 'Completed' })}
-                            disabled={task.status === 'Completed'}
+                            onClick={() => completeTaskMutation.mutate(task.id)}
+                            disabled={task.status === 'Completed' || completeTaskMutation.isPending}
                           >
-                            Mark as Completed
+                            Mark as Completed & Resume
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>

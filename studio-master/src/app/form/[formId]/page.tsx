@@ -107,7 +107,7 @@ export default function PublicFormPage() {
               <div key={field.id}>
                 <Label htmlFor={field.id}>{field.label} {field.isMandatory && <span className="text-destructive">*</span>}</Label>
                 <Controller
-                  name={field.label.toLowerCase().replace(/\s/g, '_')} // Create a form field name
+                  name={field.id} // ✅ FIXED: Use unique field.id instead of transformed label
                   control={control}
                   rules={{ required: field.isMandatory }}
                   render={({ field: controllerField }) => {
