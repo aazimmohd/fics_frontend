@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import 'reactflow/dist/style.css'; // Import React Flow styles
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from 'sonner'
 import QueryProvider from '@/components/providers/query-provider';
 
 export const metadata: Metadata = {
@@ -25,6 +26,7 @@ export default function RootLayout({
         <QueryProvider>
           {children}
           <Toaster />
+          <SonnerToaster />
         </QueryProvider>
       </body>
     </html>

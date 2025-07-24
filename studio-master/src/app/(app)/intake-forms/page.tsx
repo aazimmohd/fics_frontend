@@ -56,7 +56,32 @@ const updateIntakeFormAPI = async ({ formId, formData }: { formId: string, formD
 const deleteIntakeFormAPI = async (formId: string): Promise<void> => { await axios.delete(`${API_URL}/${formId}`); };
 
 let fieldIdCounter = 0;
-const generateFieldId = () => `field_${fieldIdCounter++}`;
+const generateFieldId = (fieldType?: string, label?: string) => {
+  // If we have a field type, use semantic names
+  if (fieldType) {
+    switch (fieldType) {
+      case 'email':
+        return 'email';
+      case 'text':
+        // Use label-based name for text fields if available
+        if (label) {
+          return label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        }
+        return 'text_field';
+      case 'dropdown':
+        if (label) {
+          return label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+        }
+        return 'dropdown_field';
+      case 'file':
+        return 'file_upload';
+      default:
+        return `field_${fieldIdCounter++}`;
+    }
+  }
+  // Fallback to generic naming
+  return `field_${fieldIdCounter++}`;
+};
 
 export default function IntakeFormsPage() {
   const [viewMode, setViewMode] = useState<'list' | 'builder'>('list');
@@ -133,10 +158,10 @@ export default function IntakeFormsPage() {
   useEffect(() => {
     if (editingFormData) {
       setFormName(editingFormData.name);
-      // Regenerate field IDs to avoid conflicts with the generateFieldId counter
+      // Regenerate field IDs using semantic names
       const fieldsWithUniqueIds = (editingFormData.definition.fields || []).map(field => ({
         ...field,
-        id: generateFieldId()
+        id: generateFieldId(field.fieldType, field.label)
       }));
       setFields(fieldsWithUniqueIds);
       setSelectedWorkflow(editingFormData.linked_workflow_id || '');
@@ -175,7 +200,7 @@ export default function IntakeFormsPage() {
   const handleAddField = () => {
     setFields([
       ...fields,
-      { id: generateFieldId(), label: '', fieldType: 'text', options: '', isMandatory: false },
+      { id: generateFieldId('text', ''), label: '', fieldType: 'text', options: '', isMandatory: false },
     ]);
   };
 
@@ -185,9 +210,20 @@ export default function IntakeFormsPage() {
 
   const handleFieldChange = (id: string, property: keyof FormFieldItem, value: string | boolean | FormFieldItem['fieldType']) => {
     setFields(
-      fields.map((field) =>
-        field.id === id ? { ...field, [property]: value } : field
-      )
+      fields.map((field) => {
+        if (field.id === id) {
+          const updatedField = { ...field, [property]: value };
+          // Regenerate ID if field type or label changed
+          if (property === 'fieldType' || property === 'label') {
+            updatedField.id = generateFieldId(
+              property === 'fieldType' ? value as string : field.fieldType,
+              property === 'label' ? value as string : field.label
+            );
+          }
+          return updatedField;
+        }
+        return field;
+      })
     );
   };
 

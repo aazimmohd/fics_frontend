@@ -46,7 +46,12 @@ Your response MUST be a JSON object containing two keys:
     Ensure all node and edge properties (IDs, types, positions, data, sourcePosition, targetPosition, styles, markerEnd, animated status) are correctly maintained or updated.
     If adding new nodes, ensure their \`position\` is reasonable (e.g., x: Math.random() * 400, y: Math.random() * 400, or relative to connected nodes if specified). Generate new unique IDs for new nodes (e.g., "ai_node_<timestamp_or_random>").
     If adding new edges, ensure \`source\` and \`target\` IDs are valid and refer to existing or newly created nodes. Generate new unique IDs for new edges (e.g., "ai_edge_<timestamp_or_random>").
-    All node types must be one of: 'input', 'input_form', 'output', 'sendEmail', 'runSql', 'callWebhook', 'delay', 'condition', 'assignTask', 'updateRecord', 'default'.
+    All node types must be one of: 'input', 'input_form', 'output', 'sendEmail', 'runSql', 'callWebhook', 'delay', 'condition', 'assignTask', 'humanTask', 'updateRecord', 'default'.
+    
+    IMPORTANT NODE TYPE USAGE:
+    - Use 'assignTask' for simple task assignments that don't pause the workflow (workflow continues immediately)
+    - Use 'humanTask' for human tasks that PAUSE the workflow until completed (e.g., manual approval, review required, human validation)
+    
     Node 'sourcePosition' and 'targetPosition' should generally be 'right' and 'left' respectively for a left-to-right flow, but can be 'top' or 'bottom' if appropriate.
     Edges should generally have \`animated: true\`, \`markerEnd: { type: "ArrowClosed", color: "hsl(var(--primary))" }\`, and \`style: { stroke: "hsl(var(--primary))", strokeWidth: 2 }\` unless specified otherwise.
     Node styling guidelines:

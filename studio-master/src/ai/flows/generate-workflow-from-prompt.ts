@@ -47,9 +47,12 @@ const prompt = ai.definePrompt({
   - 'callWebhook' for API calls.
   - 'delay' for pauses.
   - 'condition' for branching logic.
-  - 'assignTask' for human tasks.
+  - 'assignTask' for simple task assignments (workflow continues immediately).
+  - 'humanTask' for human tasks that PAUSE the workflow until completed (use when human intervention/approval is needed).
   - 'updateRecord' for data modification.
   - 'default' for other generic actions.
+  
+  IMPORTANT: Use 'humanTask' when the workflow needs to pause and wait for human action (e.g., "manual approval", "review required", "human validation"). Use 'assignTask' only for simple task notifications that don't pause the workflow.
 
   Example for a form-triggered workflow:
   {
@@ -73,9 +76,10 @@ const prompt = ai.definePrompt({
       },
       {
         "id": "node3",
-        "type": "assignTask",
+        "type": "humanTask",
         "data": {
-          "label": "Assign to Sales Rep",
+          "label": "Manual Review Required",
+          "taskTitle": "Review new inquiry and approve next steps",
           "assignee": "sales_team_member_1"
         }
       }

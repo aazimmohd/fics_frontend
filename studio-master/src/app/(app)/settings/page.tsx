@@ -11,6 +11,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, AlertTriangle, Database, Trash2, Edit, PlusCircle, KeyRound, Flame } from "lucide-react";
+import { TestDbConnectionButton } from "@/components/shared/test-db-connection-button";
+import { TestSonner } from "@/components/shared/test-sonner";
 
 // --- INTERFACES & API ---
 interface DbConfig { id: string; config_name: string; db_type: string; host: string; username: string; database_name: string; }
@@ -144,6 +146,10 @@ export default function SettingsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">Settings</h1>
         <p className="text-muted-foreground">Manage integrations and database connections for your workflows.</p>
+        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+          <h3 className="text-sm font-semibold mb-2">Test Sonner Integration</h3>
+          <TestSonner />
+        </div>
       </div>
 
       {/* --- INTEGRATIONS & CREDENTIALS CARD --- */}
@@ -231,6 +237,7 @@ export default function SettingsPage() {
                       <p className="text-sm text-muted-foreground">{config.db_type} &middot; {config.host}</p>
                     </div>
                     <div className="flex gap-2">
+                      <TestDbConnectionButton configId={config.id} />
                       <Button variant="outline" size="sm">
                         <Edit className="mr-2 h-4 w-4" />Edit
                       </Button>
