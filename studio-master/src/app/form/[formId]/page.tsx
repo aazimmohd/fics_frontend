@@ -42,7 +42,7 @@ interface FormSubmission {
 const API_URL = 'http://127.0.0.1:8000/api';
 
 const getFormDefinition = async (formId: string): Promise<IntakeForm> => {
-  const { data } = await axios.get(`${API_URL}/intake-forms/${formId}`);
+  const { data } = await axios.get(`${API_URL}/public/intake-forms/${formId}`);
   return data;
 };
 

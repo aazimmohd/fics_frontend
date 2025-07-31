@@ -20,7 +20,9 @@ interface LogEntry {
 }
 
 const getLogsForRun = async (runId: string): Promise<LogEntry[]> => {
-  const { data } = await axios.get(`http://127.0.0.1:8000/api/trigger-runs/${runId}/logs`);
+  const { data } = await axios.get(`http://127.0.0.1:8000/api/trigger-runs/${runId}/logs`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+  });
   return data;
 };
 

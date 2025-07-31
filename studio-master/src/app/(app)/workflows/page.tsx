@@ -35,22 +35,29 @@ interface InitialWorkflowData {
 
 // This is the function that will fetch the data from the FastAPI application
 const getWorkflows = async (): Promise<Workflow[]> => {
-  const API_BASE_URL = 'http://127.0.0.1:8000/api'; // Local FastAPI application
-  const response = await axios.get(`${API_BASE_URL}/workflows`);
-  return response.data;
+  const { api } = await import('@/lib/api');
+  return await api.get('/workflows');
 };
 
 // Function to fetch a single workflow by ID
 const getWorkflowById = async (id: string): Promise<Workflow> => {
   const API_BASE_URL = 'http://127.0.0.1:8000/api';
-  const response = await axios.get(`${API_BASE_URL}/workflows/${id}`);
+  const response = await axios.get(`${API_BASE_URL}/workflows/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+    },
+  });
   return response.data;
 };
 
 // NEW: API function for deleting a workflow
 const deleteWorkflowAPI = async (workflowId: string): Promise<void> => {
   const API_BASE_URL = 'http://127.0.0.1:8000/api';
-  await axios.delete(`${API_BASE_URL}/workflows/${workflowId}`);
+  await axios.delete(`${API_BASE_URL}/workflows/${workflowId}`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+    },
+  });
 };
 
 function WorkflowsPageContent() {

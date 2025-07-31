@@ -15,8 +15,19 @@ interface WorkflowForRun { id: string; name: string; }
 interface TriggerRun { id: string; status: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED'; started_at: string; completed_at: string | null; workflow: WorkflowForRun; }
 interface LogEntry { id: string; message: string | null; status: 'Info' | 'Success' | 'Error'; timestamp: string; }
 
-const getTriggerRuns = async (): Promise<TriggerRun[]> => (await axios.get('http://127.0.0.1:8000/api/trigger-runs')).data;
-const getLogsForRun = async (runId: string): Promise<LogEntry[]> => (await axios.get(`http://127.0.0.1:8000/api/trigger-runs/${runId}/logs`)).data;
+const getTriggerRuns = async (): Promise<TriggerRun[]> => {
+  const response = await axios.get('http://127.0.0.1:8000/api/trigger-runs', {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+  });
+  return response.data;
+};
+
+const getLogsForRun = async (runId: string): Promise<LogEntry[]> => {
+  const response = await axios.get(`http://127.0.0.1:8000/api/trigger-runs/${runId}/logs`, {
+    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+  });
+  return response.data;
+};
 
 // --- HELPER FUNCTIONS ---
 const formatDuration = (start: string, end: string | null) => {

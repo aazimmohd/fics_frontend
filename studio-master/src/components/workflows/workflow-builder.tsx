@@ -130,22 +130,24 @@ if (!AllNodeTypes['default']) AllNodeTypes['default'] = IconNode;
 
 
 const DndSidebar = ({ onDragStart }: { onDragStart: (event: React.DragEvent<HTMLDivElement>, nodeType: string) => void }) => (
-  <aside className="w-72 p-4 border-r bg-card space-y-3 overflow-y-auto">
-    <h3 className="text-lg font-semibold flex items-center">
+  <aside className="w-72 p-4 border-r bg-card h-full flex flex-col">
+    <h3 className="text-lg font-semibold flex items-center mb-3 flex-shrink-0">
         <Settings2 className="mr-2 h-5 w-5 text-primary" /> Nodes
       </h3>
-      {nodeDefinitions.map((nodeDef) => (
-        <div
-        key={nodeDef.type}
-        className="p-3 border rounded-lg bg-background hover:shadow-lg transition-shadow cursor-grab"
-        onDragStart={(event) => onDragStart(event, nodeDef.type)}
-          draggable
-        >
-        <nodeDef.icon className="h-5 w-5 text-primary mb-2" />
-        <p className="font-medium text-sm">{nodeDef.label}</p>
-            <p className="text-xs text-muted-foreground">{nodeDef.description}</p>
-        </div>
-      ))}
+      <div className="flex-1 overflow-y-auto space-y-3">
+        {nodeDefinitions.map((nodeDef) => (
+          <div
+          key={nodeDef.type}
+          className="p-3 border rounded-lg bg-background hover:shadow-lg transition-shadow cursor-grab"
+          onDragStart={(event) => onDragStart(event, nodeDef.type)}
+            draggable
+          >
+          <nodeDef.icon className="h-5 w-5 text-primary mb-2" />
+          <p className="font-medium text-sm">{nodeDef.label}</p>
+              <p className="text-xs text-muted-foreground">{nodeDef.description}</p>
+          </div>
+        ))}
+      </div>
     </aside>
   );
 
@@ -188,7 +190,12 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
   // --- CREATE MUTATION (for POST) ---
   const createWorkflowAPI = async (workflowData: WorkflowCreate): Promise<Workflow> => {
     const API_BASE_URL = 'http://127.0.0.1:8000/api';
-    const { data } = await axios.post(`${API_BASE_URL}/workflows`, workflowData);
+    const { data } = await axios.post(`${API_BASE_URL}/workflows`, workflowData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
     return data;
   };
 
@@ -218,7 +225,12 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
   // --- UPDATE MUTATION (for PUT) ---
   const updateWorkflowAPI = async ({ id, data }: { id: string, data: WorkflowUpdate }): Promise<Workflow> => {
     const API_BASE_URL = 'http://127.0.0.1:8000/api';
-    const response = await axios.put(`${API_BASE_URL}/workflows/${id}`, data);
+    const response = await axios.put(`${API_BASE_URL}/workflows/${id}`, data, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+      },
+    });
     return response.data;
   };
 

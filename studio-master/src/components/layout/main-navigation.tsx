@@ -22,22 +22,30 @@ import {
   LogOut,
   ListChecks, // Added icon
   ListTodo,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from '@/context/AuthContext';
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/intake-forms", label: "Intake Forms", icon: FileText },
-  { href: "/workflows", label: "Workflows", icon: Network },
-  { href: "/trigger-runs", label: "Trigger Runs", icon: ListChecks }, // New navigation item
-  { href: "/tasks", label: "Tasks", icon: ListTodo },
-  { href: "/templates", label: "Templates", icon: LayoutList },
-  { href: "/ai-generator", label: "AI Generator", icon: Sparkles },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permissions: [] },
+  { href: "/intake-forms", label: "Intake Forms", icon: FileText, permissions: ["intake_forms:read"] },
+  { href: "/workflows", label: "Workflows", icon: Network, permissions: ["workflows:read"] },
+  { href: "/trigger-runs", label: "Trigger Runs", icon: ListChecks, permissions: ["trigger_runs:read"] },
+  { href: "/tasks", label: "Tasks", icon: ListTodo, permissions: ["tasks:read"] },
+  { href: "/templates", label: "Templates", icon: LayoutList, permissions: ["workflows:read"] },
+  { href: "/ai-generator", label: "AI Generator", icon: Sparkles, permissions: [] },
+  { href: "/settings", label: "Settings", icon: Settings, permissions: [] },
+  { href: "/settings/users", label: "User Management", icon: Users, permissions: ["users:manage"] },
 ];
 
 export function MainNavigation() {
   const pathname = usePathname();
+  const { hasPermission, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+  };
 
   return (
     <>
@@ -49,27 +57,34 @@ export function MainNavigation() {
       </SidebarHeader>
       <SidebarContent className="flex-1 p-2">
         <SidebarMenu>
-          {navItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <Link href={item.href} legacyBehavior passHref>
-                <SidebarMenuButton
-                  variant="default"
-                  className={cn(
-                    "w-full justify-start",
-                    pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
-                      ? "bg-accent text-accent-foreground"
-                      : "hover:bg-accent/50"
-                  )}
-                  tooltip={{ children: item.label, side: "right", align: "center" }}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  <span className="truncate group-data-[collapsible=icon]:hidden">
-                    {item.label}
-                  </span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          ))}
+          {navItems.map((item) => {
+            // Check if the user has all required permissions for this item
+            const canView = item.permissions.every(permission => hasPermission(permission));
+            if (!canView) {
+              return null; // Don't render if user doesn't have permission
+            }
+            return (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href} legacyBehavior passHref>
+                  <SidebarMenuButton
+                    variant="default"
+                    className={cn(
+                      "w-full justify-start",
+                      pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
+                        ? "bg-accent text-accent-foreground"
+                        : "hover:bg-accent/50"
+                    )}
+                    tooltip={{ children: item.label, side: "right", align: "center" }}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    <span className="truncate group-data-[collapsible=icon]:hidden">
+                      {item.label}
+                    </span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-2 border-t">
@@ -87,8 +102,9 @@ export function MainNavigation() {
           <SidebarMenuItem>
             <SidebarMenuButton
               variant="default"
-              className="w-full justify-start hover:bg-accent/50"
+              className="w-full justify-start hover:bg-accent/50 cursor-pointer"
               tooltip={{ children: "Logout", side: "right", align: "center" }}
+              onClick={handleLogout}
             >
               <LogOut className="mr-3 h-5 w-5" />
               <span className="truncate group-data-[collapsible=icon]:hidden">Logout</span>

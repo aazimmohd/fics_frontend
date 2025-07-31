@@ -4,6 +4,8 @@ import 'reactflow/dist/style.css'; // Import React Flow styles
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from 'sonner'
 import QueryProvider from '@/components/providers/query-provider';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'FiCX',
@@ -24,7 +26,11 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <QueryProvider>
-          {children}
+          <GoogleOAuthProvider clientId="187809686763-g0uh3077eqi92ha1mkmvojlk1t5l2coe.apps.googleusercontent.com"> {/* Replace with your actual Google Client ID */}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </GoogleOAuthProvider>
           <Toaster />
           <SonnerToaster />
         </QueryProvider>
