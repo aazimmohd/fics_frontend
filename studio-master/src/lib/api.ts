@@ -211,4 +211,29 @@ export async function publicApiRequest(
   }
 }
 
+// Share form functionality
+export interface ShareFormRequest {
+  recipient_emails: string[];
+  subject?: string;
+  message?: string;
+  include_form_link?: boolean;
+}
+
+export interface ShareFormResponse {
+  success: boolean;
+  message: string;
+  sent_to: string[];
+  failed_emails: string[];
+}
+
+export async function shareForm(formId: string, shareData: ShareFormRequest): Promise<ShareFormResponse> {
+  return await apiRequest(`/intake-forms/${formId}/share`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(shareData),
+  });
+}
+
 export { ApiError, SessionExpiredError }; 

@@ -23,6 +23,7 @@ import {
   ListChecks, // Added icon
   ListTodo,
   Users,
+  FileSpreadsheet, // Added for submissions
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/AuthContext';
@@ -30,6 +31,7 @@ import { useAuth } from '@/context/AuthContext';
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permissions: [] },
   { href: "/intake-forms", label: "Intake Forms", icon: FileText, permissions: ["intake_forms:read"] },
+  { href: "/submissions", label: "Submissions", icon: FileSpreadsheet, permissions: ["form_submissions:read"] },
   { href: "/workflows", label: "Workflows", icon: Network, permissions: ["workflows:read"] },
   { href: "/trigger-runs", label: "Trigger Runs", icon: ListChecks, permissions: ["trigger_runs:read"] },
   { href: "/tasks", label: "Tasks", icon: ListTodo, permissions: ["tasks:read"] },
