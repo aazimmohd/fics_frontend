@@ -24,6 +24,7 @@ import {
   ListTodo,
   Users,
   FileSpreadsheet, // Added for submissions
+  Bell, // Added for notifications test
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/AuthContext';

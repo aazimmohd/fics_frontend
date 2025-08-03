@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
 import axios, { AxiosError } from 'axios';
 import { LayoutGrid, List, Filter, CalendarDays, MoreHorizontal, User, Plus, Clock, AlertCircle, CheckCircle2, FileText, WorkflowIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -143,7 +144,8 @@ function TaskCard({ task, onCompleteTask, isCompleting, onOpenTaskModal, isDragg
     }
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
@@ -675,6 +677,7 @@ export default function TasksPage() {
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
 
   const handleOpenTaskModal = (task: Task) => {
     setSelectedTask(task);
@@ -711,6 +714,21 @@ export default function TasksPage() {
     queryKey: ['tasks'],
     queryFn: getTasks,
   });
+
+  // Handle taskId from query parameter (for notification navigation)
+  useEffect(() => {
+    const taskId = searchParams.get('taskId');
+    if (taskId && tasks) {
+      const task = tasks.find(t => t.id === taskId);
+      if (task) {
+        setSelectedTask(task);
+        // Remove the query parameter from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('taskId');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+  }, [searchParams, tasks]);
 
   const updateTaskStatus = useMutation({
     mutationFn: updateTaskStatusAPI,

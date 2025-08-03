@@ -14,6 +14,7 @@ import {
 import { LogOut, UserCircle, Settings } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { NotificationBell } from "@/components/shared/notification-bell";
 
 export function AppHeader() {
   const { user, logout } = useAuth();
@@ -36,6 +37,7 @@ export function AppHeader() {
           <span className="text-xl font-bold">FiCX</span>
         </Link>
         <div className="ml-auto flex items-center gap-2">
+          <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">

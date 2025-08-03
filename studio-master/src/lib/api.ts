@@ -236,4 +236,59 @@ export async function shareForm(formId: string, shareData: ShareFormRequest): Pr
   });
 }
 
+// Dashboard API functions
+export interface DashboardStats {
+  metrics: {
+    active_workflows: {
+      value: number;
+      change: number;
+      change_type: 'absolute' | 'percentage';
+    };
+    forms_submitted: {
+      value: number;
+      change: number;
+      change_type: 'absolute' | 'percentage';
+    };
+    tasks_pending: {
+      value: number;
+      overdue: number;
+    };
+    recent_activity: {
+      runs_24h: number;
+      successful_runs: number;
+      failed_runs: number;
+    };
+    total_users: number;
+  };
+  recent_activities: Array<{
+    type: string;
+    title: string;
+    description: string;
+    timestamp: string;
+    status: string;
+  }>;
+  weekly_chart_data: Array<{
+    date: string;
+    day: string;
+    submissions: number;
+    workflow_runs: number;
+  }>;
+}
+
+export interface QuickAction {
+  type: string;
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  link: string;
+}
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+  return await api.get('/dashboard/stats');
+}
+
+export async function getQuickActions(): Promise<{ quick_actions: QuickAction[] }> {
+  return await api.get('/dashboard/quick-actions');
+}
+
 export { ApiError, SessionExpiredError }; 

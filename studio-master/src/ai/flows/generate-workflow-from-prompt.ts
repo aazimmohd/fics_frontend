@@ -53,6 +53,8 @@ const prompt = ai.definePrompt({
   - 'default' for other generic actions.
   
   IMPORTANT: Use 'humanTask' when the workflow needs to pause and wait for human action (e.g., "manual approval", "review required", "human validation"). Use 'assignTask' only for simple task notifications that don't pause the workflow.
+  
+  For humanTask nodes, use assigneeId instead of assignee (the system will handle user selection via dropdown).
 
   Example for a form-triggered workflow:
   {
@@ -80,7 +82,10 @@ const prompt = ai.definePrompt({
         "data": {
           "label": "Manual Review Required",
           "taskTitle": "Review new inquiry and approve next steps",
-          "assignee": "sales_team_member_1"
+          "assigneeId": "user_id_here",
+          "timeoutMinutes": 2,
+          "escalationEnabled": true,
+          "maxEscalations": 3
         }
       }
     ],

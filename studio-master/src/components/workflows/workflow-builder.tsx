@@ -257,18 +257,60 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
 
   useEffect(() => {
     setIsClient(true);
-    const initialNds = (initialNodesData || []).map(node => ({
-      ...node,
-      style: { ...getNodeStyle(node.type), ...node.style } // Ensure consistent styling
-    }));
+    
+    // Migrate any condition nodes from old logic structure to new conditions structure
+    const migratedNodes = (initialNodesData || []).map(node => {
+      if (node.type === 'condition' && node.data.logic) {
+        console.log('Migrating condition node from old logic structure to new conditions structure');
+        const { logic, ...restData } = node.data; // Remove the old logic structure
+        return {
+          ...node,
+          data: {
+            ...restData,
+            conditions: {
+              if: { 
+                variable: logic.variable || '', 
+                operator: logic.operator || 'equals', 
+                value: logic.value || '' 
+              },
+              elseif: [],
+              else: { enabled: false }
+            }
+          },
+          style: { ...getNodeStyle(node.type), ...node.style }
+        };
+      } else if (node.type === 'condition' && node.data.conditions) {
+        // Fix existing condition nodes that might have empty operators
+        const updatedData = { ...node.data };
+        if (updatedData.conditions.if && !updatedData.conditions.if.operator) {
+          updatedData.conditions.if.operator = 'equals';
+        }
+        if (updatedData.conditions.elseif) {
+          updatedData.conditions.elseif = updatedData.conditions.elseif.map((condition: any) => ({
+            ...condition,
+            operator: condition.operator || 'equals'
+          }));
+        }
+        return {
+          ...node,
+          data: updatedData,
+          style: { ...getNodeStyle(node.type), ...node.style }
+        };
+      }
+      return {
+        ...node,
+        style: { ...getNodeStyle(node.type), ...node.style } // Ensure consistent styling
+      };
+    });
+    
     const initialEds = initialEdgesData || [];
-    setNodes(initialNds);
+    setNodes(migratedNodes);
     setEdges(initialEds);
-    setHistory([{ nodes: initialNds, edges: initialEds }]);
+    setHistory([{ nodes: migratedNodes, edges: initialEds }]);
     setHistoryIndex(0);
     
     let maxDndId = 0;
-    initialNds.forEach(node => {
+    migratedNodes.forEach(node => {
       if (node.id.startsWith('dndnode_')) {
         const num = parseInt(node.id.split('_')[1]);
         if (!isNaN(num) && num > maxDndId) {
@@ -380,25 +422,68 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
 
   // Updated save workflow handler - opens the naming modal
   const handleSaveWorkflow = useCallback(() => {
-    const nodesForApi = nodes.map(node => ({
-      id: node.id,
-      type: node.type,
-      position: node.position,
-      data: { ...node.data },
-      ...node.width && { width: node.width },
-      ...node.height && { height: node.height },
-      ...node.sourcePosition && { sourcePosition: node.sourcePosition },
-      ...node.targetPosition && { targetPosition: node.targetPosition },
-    }));
+    const nodesForApi = nodes.map(node => {
+      // Clean up any old logic structures from condition nodes before saving
+      let cleanData = { ...node.data };
+      if (node.type === 'condition' && cleanData.logic) {
+        console.log('Cleaning up old logic structure before saving');
+        const { logic, ...restData } = cleanData;
+        cleanData = restData;
+      }
+      
+      return {
+        id: node.id,
+        type: node.type,
+        position: node.position,
+        data: cleanData,
+        ...node.width && { width: node.width },
+        ...node.height && { height: node.height },
+        ...node.sourcePosition && { sourcePosition: node.sourcePosition },
+        ...node.targetPosition && { targetPosition: node.targetPosition },
+      };
+    });
 
-    const edgesForApi = edges.map(edge => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      animated: edge.animated,
-      markerEnd: edge.markerEnd,
-      style: edge.style,
-    }));
+    const edgesForApi = edges.map(edge => {
+      const baseEdge: any = {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        animated: edge.animated,
+        markerEnd: edge.markerEnd,
+        style: edge.style,
+      };
+
+      // Add sourceHandle for condition node edges
+      const sourceNode = nodes.find(n => n.id === edge.source);
+      if (sourceNode && sourceNode.type === 'condition') {
+        // Find all edges from this condition node
+        const conditionEdges = edges.filter(e => e.source === edge.source);
+        
+        if (conditionEdges.length >= 2) {
+          // For condition nodes, assign based on order/position to match IF/ELSEIF structure
+          const edgesWithTargetPos = conditionEdges.map(e => {
+            const targetNode = nodes.find(n => n.id === e.target);
+            return {
+              edge: e,
+              targetY: targetNode?.position?.y || 0
+            };
+          }).sort((a, b) => a.targetY - b.targetY);
+          
+          // Find which position this edge is in
+          const edgeIndex = edgesWithTargetPos.findIndex(item => item.edge.id === edge.id);
+          
+          if (edgeIndex === 0) {
+            // First edge (top) = IF condition
+            baseEdge.sourceHandle = 'if';
+          } else {
+            // Subsequent edges = ELSEIF conditions (elseif_0, elseif_1, etc.)
+            baseEdge.sourceHandle = `elseif_${edgeIndex - 1}`;
+          }
+        }
+      }
+
+      return baseEdge;
+    });
 
     const definition = { nodes: nodesForApi, edges: edgesForApi };
     console.log("--- DEBUG: FINAL SAVE PAYLOAD (handleSaveWorkflow) ---");
@@ -420,25 +505,68 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
 
   // Function called when user submits the workflow name
   const handleNameAndSave = useCallback((name: string) => {
-    const nodesForApi = nodes.map(node => ({
-      id: node.id,
-      type: node.type,
-      position: node.position,
-      data: { ...node.data },
-      ...node.width && { width: node.width },
-      ...node.height && { height: node.height },
-      ...node.sourcePosition && { sourcePosition: node.sourcePosition },
-      ...node.targetPosition && { targetPosition: node.targetPosition },
-    }));
+    const nodesForApi = nodes.map(node => {
+      // Clean up any old logic structures from condition nodes before saving
+      let cleanData = { ...node.data };
+      if (node.type === 'condition' && cleanData.logic) {
+        console.log('Cleaning up old logic structure before saving');
+        const { logic, ...restData } = cleanData;
+        cleanData = restData;
+      }
+      
+      return {
+        id: node.id,
+        type: node.type,
+        position: node.position,
+        data: cleanData,
+        ...node.width && { width: node.width },
+        ...node.height && { height: node.height },
+        ...node.sourcePosition && { sourcePosition: node.sourcePosition },
+        ...node.targetPosition && { targetPosition: node.targetPosition },
+      };
+    });
 
-    const edgesForApi = edges.map(edge => ({
-      id: edge.id,
-      source: edge.source,
-      target: edge.target,
-      animated: edge.animated,
-      markerEnd: edge.markerEnd,
-      style: edge.style,
-    }));
+    const edgesForApi = edges.map(edge => {
+      const baseEdge: any = {
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        animated: edge.animated,
+        markerEnd: edge.markerEnd,
+        style: edge.style,
+      };
+
+      // Add sourceHandle for condition node edges
+      const sourceNode = nodes.find(n => n.id === edge.source);
+      if (sourceNode && sourceNode.type === 'condition') {
+        // Find all edges from this condition node
+        const conditionEdges = edges.filter(e => e.source === edge.source);
+        
+        if (conditionEdges.length >= 2) {
+          // For condition nodes, assign based on order/position to match IF/ELSEIF structure
+          const edgesWithTargetPos = conditionEdges.map(e => {
+            const targetNode = nodes.find(n => n.id === e.target);
+            return {
+              edge: e,
+              targetY: targetNode?.position?.y || 0
+            };
+          }).sort((a, b) => a.targetY - b.targetY);
+          
+          // Find which position this edge is in
+          const edgeIndex = edgesWithTargetPos.findIndex(item => item.edge.id === edge.id);
+          
+          if (edgeIndex === 0) {
+            // First edge (top) = IF condition
+            baseEdge.sourceHandle = 'if';
+          } else {
+            // Subsequent edges = ELSEIF conditions (elseif_0, elseif_1, etc.)
+            baseEdge.sourceHandle = `elseif_${edgeIndex - 1}`;
+          }
+        }
+      }
+
+      return baseEdge;
+    });
 
     const definition = { nodes: nodesForApi, edges: edgesForApi };
     console.log("--- DEBUG: FINAL SAVE PAYLOAD (handleNameAndSave) ---");
