@@ -36,8 +36,8 @@ const navItems = [
   { href: "/workflows", label: "Workflows", icon: Network, permissions: ["workflows:read"] },
   { href: "/trigger-runs", label: "Trigger Runs", icon: ListChecks, permissions: ["trigger_runs:read"] },
   { href: "/tasks", label: "Tasks", icon: ListTodo, permissions: ["tasks:read"] },
-  { href: "/templates", label: "Templates", icon: LayoutList, permissions: ["workflows:read"] },
-  { href: "/ai-generator", label: "AI Generator", icon: Sparkles, permissions: [] },
+  { href: "/templates", label: "Templates", icon: LayoutList, permissions: ["workflows:read"], disabled: true, comingSoon: true },
+  { href: "/ai-generator", label: "AI Generator", icon: Sparkles, permissions: [], disabled: true, comingSoon: true },
   { href: "/settings", label: "Settings", icon: Settings, permissions: [] },
   { href: "/settings/users", label: "User Management", icon: Users, permissions: ["users:manage"] },
 ];
@@ -66,6 +66,28 @@ export function MainNavigation() {
             if (!canView) {
               return null; // Don't render if user doesn't have permission
             }
+            
+            // Handle disabled items
+            if (item.disabled) {
+              return (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    variant="default"
+                    className={cn(
+                      "w-full justify-start cursor-not-allowed opacity-50 hover:bg-transparent"
+                    )}
+                    disabled
+                    tooltip={{ children: item.label, side: "right", align: "center" }}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    <span className="truncate group-data-[collapsible=icon]:hidden">
+                      {item.label} {item.comingSoon && "(Coming Soon)"}
+                    </span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              );
+            }
+            
             return (
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
