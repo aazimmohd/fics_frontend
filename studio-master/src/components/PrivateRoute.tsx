@@ -18,7 +18,7 @@ export default function PrivateRoute({ children, requiredPermissions }: PrivateR
     if (isLoading) return;
     
     if (!isAuthenticated) {
-      router.push('/auth/login');
+      router.push('/beta-enrollment');
     } else if (requiredPermissions && requiredPermissions.length > 0) {
       const userHasAllPermissions = requiredPermissions.every(permission => hasPermission(permission));
       if (!userHasAllPermissions) {

@@ -7,13 +7,16 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleSignInWrapper } from '@/components/shared/google-signin-wrapper';
+import { storeGoogleCredential } from '@/lib/google-auth';
+import { useAuth } from '@/context/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,13 +33,24 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.detail || 'Login failed');
+        const errorMessage = errorData.detail || 'Login failed';
+        
+        // Check if the error is about missing beta access
+        if (errorMessage.includes('Beta access required')) {
+          setError('Beta access required. Please request beta access first.');
+          // Redirect to beta enrollment after a short delay
+          setTimeout(() => {
+            router.push('/beta-enrollment');
+          }, 2000);
+          return;
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      localStorage.setItem('access_token', data.access_token);
-      // Redirect to dashboard or home page after successful login
-      router.push('/'); 
+      // Use AuthContext login function instead of direct localStorage and router
+      await login(data.access_token);
     } catch (err: any) {
       setError(err.message);
     }
@@ -83,9 +97,15 @@ export default function LoginPage() {
               Sign up
             </Link>
           </div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            Need beta access?{' '}
+            <Link href="/beta-enrollment" className="font-medium text-blue-600 hover:underline">
+              Request access
+            </Link>
+          </div>
           {/* Google Sign-In Button Placeholder */}
           <div className="w-full mt-4">
-            <GoogleLogin
+            <GoogleSignInWrapper
               onSuccess={async (credentialResponse) => {
                 try {
                   const response = await fetch('http://localhost:8000/api/auth/google-login', {
@@ -98,12 +118,28 @@ export default function LoginPage() {
 
                   if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Google login failed');
+                    const errorMessage = errorData.detail || 'Google login failed';
+                    
+                    // Check if the error is about missing beta access
+                    if (errorMessage.includes('Beta access required')) {
+                      setError('Beta access required. Please request beta access first.');
+                      // Redirect to beta enrollment after a short delay
+                      setTimeout(() => {
+                        router.push('/beta-enrollment');
+                      }, 2000);
+                      return;
+                    }
+                    
+                    throw new Error(errorMessage);
                   }
 
                   const data = await response.json();
-                  localStorage.setItem('access_token', data.access_token);
-                  router.push('/');
+                  // Store Google credential for proper logout
+                  if (credentialResponse.credential) {
+                    storeGoogleCredential(credentialResponse.credential);
+                  }
+                  // Use AuthContext login function instead of direct localStorage and router
+                  await login(data.access_token);
                 } catch (err: any) {
                   setError(err.message);
                 }
@@ -111,7 +147,6 @@ export default function LoginPage() {
               onError={() => {
                 setError('Google login failed');
               }}
-              useOneTap
             />
           </div>
         </CardFooter>

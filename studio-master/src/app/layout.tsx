@@ -12,6 +12,19 @@ export const metadata: Metadata = {
   description: 'Streamline your client onboarding and automate workflows with FiCX.',
 };
 
+// Suppress FedCM errors globally
+if (typeof window !== 'undefined') {
+  const originalError = console.error;
+  console.error = (...args) => {
+    const message = args[0];
+    if (typeof message === 'string' && message.includes('FedCM')) {
+      // Suppress FedCM errors
+      return;
+    }
+    originalError.apply(console, args);
+  };
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{

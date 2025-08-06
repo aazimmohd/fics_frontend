@@ -21,7 +21,16 @@ import {
   Users,
   Building,
   Eye,
-  EyeOff
+  EyeOff,
+  Crown,
+  Star,
+  Zap,
+  CheckCircle,
+  Settings,
+  Activity,
+  Award,
+  Briefcase,
+  Clock
 } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 import PrivateRoute from '@/components/PrivateRoute';
@@ -122,29 +131,31 @@ function ProfilePageContent() {
     });
   };
 
-  const getRoleColors = (roleName: string) => {
-    const colors: Record<string, string> = {
-      'admin': 'bg-red-100 text-red-800 border-red-200',
-      'manager': 'bg-blue-100 text-blue-800 border-blue-200',
-      'user': 'bg-green-100 text-green-800 border-green-200',
-      'viewer': 'bg-gray-100 text-gray-800 border-gray-200',
+  const getRoleVariant = (roleName: string) => {
+    const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+      'admin': 'destructive',
+      'manager': 'default',
+      'user': 'secondary',
+      'viewer': 'outline',
     };
-    return colors[roleName.toLowerCase()] || 'bg-purple-100 text-purple-800 border-purple-200';
+    return variants[roleName.toLowerCase()] || 'secondary';
   };
 
   if (isLoading && !profileData) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-            <div className="grid gap-6 md:grid-cols-3">
-              <div className="md:col-span-1">
-                <div className="h-64 bg-gray-200 rounded-lg"></div>
-              </div>
-              <div className="md:col-span-2 space-y-4">
-                <div className="h-32 bg-gray-200 rounded-lg"></div>
-                <div className="h-48 bg-gray-200 rounded-lg"></div>
+      <div className="min-h-screen bg-slate-50">
+        <div className="container mx-auto px-6 py-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="animate-pulse space-y-8">
+              <div className="h-8 bg-slate-200 rounded w-1/4 mx-auto"></div>
+              <div className="grid gap-8 lg:grid-cols-3">
+                <div className="lg:col-span-1">
+                  <div className="h-96 bg-slate-200 rounded-lg"></div>
+                </div>
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="h-48 bg-slate-200 rounded-lg"></div>
+                  <div className="h-64 bg-slate-200 rounded-lg"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -155,228 +166,271 @@ function ProfilePageContent() {
 
   if (!profileData) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Profile not found</h2>
-          <p className="text-gray-600 mt-2">Unable to load your profile information.</p>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            <User className="w-8 h-8 text-slate-400" />
+          </div>
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">Profile Not Found</h2>
+          <p className="text-slate-600">Unable to load your profile information.</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
-          <p className="text-gray-600">Manage your account settings and preferences</p>
-        </div>
+  const totalPermissions = profileData.roles.flatMap(role => role.permissions).length;
+  const isAdmin = profileData.roles.some(role => role.name.toLowerCase() === 'admin');
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Profile Card */}
-          <div className="md:col-span-1">
-            <Card className="border-0 shadow-lg">
-              <CardContent className="p-6 text-center">
-                <div className="mb-6">
-                  <Avatar className="h-24 w-24 mx-auto mb-4 ring-4 ring-gray-100">
-                    <AvatarImage src="https://placehold.co/200x200.png" alt="Profile Picture" />
-                    <AvatarFallback className="text-xl font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {getUserInitials(profileData.full_name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  {isEditing ? (
-                    <div className="space-y-3">
-                      <Input
-                        value={editedName}
-                        onChange={(e) => setEditedName(e.target.value)}
-                        placeholder="Enter your full name"
-                        className="text-center font-semibold"
-                      />
-                      <div className="flex gap-2 justify-center">
-                        <Button 
-                          size="sm" 
-                          onClick={handleSave}
-                          disabled={isLoading}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <Save className="h-4 w-4 mr-1" />
-                          Save
-                        </Button>
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="container mx-auto px-6 py-12">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-12 text-center">
+            <h1 className="text-3xl font-semibold text-slate-900 mb-3">Profile</h1>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Manage your account settings and preferences
+            </p>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-3">
+            {/* Profile Card */}
+            <div className="lg:col-span-1">
+              <Card className="border border-slate-200 shadow-sm">
+                <CardContent className="p-8 text-center">
+                  <div className="mb-8">
+                    <Avatar className="h-24 w-24 mx-auto mb-6 ring-2 ring-slate-100">
+                      <AvatarImage src="https://placehold.co/200x200.png" alt="Profile Picture" />
+                      <AvatarFallback className="text-lg font-medium bg-slate-100 text-slate-700">
+                        {getUserInitials(profileData.full_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    
+                    {isEditing ? (
+                      <div className="space-y-4">
+                        <Input
+                          value={editedName}
+                          onChange={(e) => setEditedName(e.target.value)}
+                          placeholder="Enter your full name"
+                          className="text-center font-medium border-slate-200 focus:border-slate-400"
+                        />
+                        <div className="flex gap-2 justify-center">
+                          <Button 
+                            size="sm" 
+                            onClick={handleSave}
+                            disabled={isLoading}
+                            className="bg-slate-900 hover:bg-slate-800"
+                          >
+                            <Save className="h-4 w-4 mr-2" />
+                            Save
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            onClick={handleCancel}
+                            disabled={isLoading}
+                            className="border-slate-200 hover:border-slate-300"
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <h2 className="text-xl font-semibold text-slate-900 mb-2">
+                          {profileData.full_name || 'No name set'}
+                        </h2>
+                        <p className="text-slate-600 mb-4 flex items-center justify-center gap-2">
+                          <Mail className="h-4 w-4" />
+                          {profileData.email}
+                        </p>
                         <Button 
                           size="sm" 
                           variant="outline" 
-                          onClick={handleCancel}
-                          disabled={isLoading}
+                          onClick={() => setIsEditing(true)}
+                          className="gap-2 border-slate-200 hover:border-slate-300"
                         >
-                          <X className="h-4 w-4 mr-1" />
-                          Cancel
+                          <Edit3 className="h-4 w-4" />
+                          Edit Profile
                         </Button>
                       </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900 mb-1">
-                        {profileData.full_name || 'No name set'}
-                      </h2>
-                      <p className="text-gray-600 text-sm mb-3">{profileData.email}</p>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={() => setIsEditing(true)}
-                        className="gap-2"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                        Edit Profile
-                      </Button>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
 
-                <Separator className="my-6" />
+                  <Separator className="my-8" />
 
-                {/* Quick Stats */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-sm">
-                    <Calendar className="h-4 w-4 text-gray-500" />
-                    <div className="text-left">
-                      <p className="text-gray-600">Member since</p>
-                      <p className="font-medium">{formatDate(profileData.created_at)}</p>
+                  {/* Quick Stats */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                      <div className="w-8 h-8 bg-slate-200 rounded-lg flex items-center justify-center">
+                        <Calendar className="h-4 w-4 text-slate-600" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs text-slate-500 font-medium">Member since</p>
+                        <p className="text-sm font-medium text-slate-900">{formatDate(profileData.created_at)}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                      <div className="w-8 h-8 bg-slate-200 rounded-lg flex items-center justify-center">
+                        <Building className="h-4 w-4 text-slate-600" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs text-slate-500 font-medium">Account ID</p>
+                        <p className="font-mono text-xs font-medium text-slate-900">{profileData.account_id}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+                      <div className="w-8 h-8 bg-slate-200 rounded-lg flex items-center justify-center">
+                        <Shield className="h-4 w-4 text-slate-600" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-xs text-slate-500 font-medium">Permissions</p>
+                        <p className="text-sm font-medium text-slate-900">{totalPermissions} total</p>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3 text-sm">
-                    <Building className="h-4 w-4 text-gray-500" />
-                    <div className="text-left">
-                      <p className="text-gray-600">Account ID</p>
-                      <p className="font-medium font-mono text-xs">{profileData.account_id}</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* Details Section */}
-          <div className="md:col-span-2 space-y-6">
-            {/* Account Information */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Account Information
-                </CardTitle>
-                <CardDescription>
-                  Your basic account details and contact information
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="user-id" className="text-sm font-medium text-gray-700">User ID</Label>
-                    <Input
-                      id="user-id"
-                      value={profileData.id}
-                      readOnly
-                      className="mt-1 bg-gray-50 font-mono text-sm"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            {/* Details Section */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Account Information */}
+              <Card className="border border-slate-200 shadow-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <User className="h-5 w-5 text-slate-600" />
+                    Account Information
+                  </CardTitle>
+                  <CardDescription>
+                    Your basic account details and contact information
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="user-id" className="text-sm font-medium text-slate-700">User ID</Label>
                       <Input
-                        id="email"
-                        value={profileData.email}
+                        id="user-id"
+                        value={profileData.id}
                         readOnly
-                        className="mt-1 pl-10 bg-gray-50"
+                        className="bg-slate-50 border-slate-200 font-mono text-sm"
                       />
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Roles & Permissions */}
-            <Card className="border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
-                  Roles & Permissions
-                </CardTitle>
-                <CardDescription>
-                  Your assigned roles and access permissions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-3 block">Assigned Roles</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {profileData.roles.map((role) => (
-                        <Badge 
-                          key={role.id} 
-                          variant="secondary" 
-                          className={`${getRoleColors(role.name)} px-3 py-1`}
-                        >
-                          <Users className="h-3 w-3 mr-1" />
-                          {role.name}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <Label className="text-sm font-medium text-gray-700">Permissions</Label>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowPermissions(!showPermissions)}
-                        className="text-blue-600 hover:text-blue-700"
-                      >
-                        {showPermissions ? (
-                          <>
-                            <EyeOff className="h-4 w-4 mr-1" />
-                            Hide
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="h-4 w-4 mr-1" />
-                            Show All
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    
-                    {showPermissions && (
-                      <div className="grid gap-2 md:grid-cols-2">
-                        {profileData.roles.flatMap(role => 
-                          role.permissions.map(permission => (
-                            <div 
-                              key={`${role.id}-${permission.name}`}
-                              className="flex items-center gap-2 p-2 bg-gray-50 rounded-md text-sm"
-                            >
-                              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                              <span className="font-medium">{permission.name}</span>
-                            </div>
-                          ))
-                        )}
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-medium text-slate-700">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                        <Input
+                          id="email"
+                          value={profileData.email}
+                          readOnly
+                          className="pl-10 bg-slate-50 border-slate-200"
+                        />
                       </div>
-                    )}
-                    
-                    {!showPermissions && (
-                      <p className="text-sm text-gray-600">
-                        You have {profileData.roles.flatMap(role => role.permissions).length} permissions across {profileData.roles.length} role(s)
-                      </p>
-                    )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Roles & Permissions */}
+              <Card className="border border-slate-200 shadow-sm">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Shield className="h-5 w-5 text-slate-600" />
+                    Roles & Permissions
+                  </CardTitle>
+                  <CardDescription>
+                    Your assigned roles and access permissions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <Label className="text-sm font-medium text-slate-700 mb-3 block">Assigned Roles</Label>
+                      <div className="flex flex-wrap gap-3">
+                        {profileData.roles.map((role) => (
+                          <Badge 
+                            key={role.id} 
+                            variant={getRoleVariant(role.name)}
+                            className="px-3 py-1.5 text-sm"
+                          >
+                            <Users className="h-3 w-3 mr-1.5" />
+                            {role.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <Label className="text-sm font-medium text-slate-700">Permissions</Label>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowPermissions(!showPermissions)}
+                          className="text-slate-600 hover:text-slate-900"
+                        >
+                          {showPermissions ? (
+                            <>
+                              <EyeOff className="h-4 w-4 mr-2" />
+                              Hide Details
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4 mr-2" />
+                              Show Details
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {showPermissions && (
+                        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+                          {profileData.roles.flatMap(role => 
+                            role.permissions.map(permission => (
+                              <div 
+                                key={`${role.id}-${permission.name}`}
+                                className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100"
+                              >
+                                <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
+                                <div>
+                                  <span className="text-sm font-medium text-slate-900">{permission.name}</span>
+                                  <p className="text-xs text-slate-500 mt-0.5">{permission.description}</p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      )}
+                      
+                      {!showPermissions && (
+                        <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-slate-200 rounded-lg flex items-center justify-center">
+                              <Activity className="h-4 w-4 text-slate-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-slate-900">
+                                {totalPermissions} Total Permissions
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                Across {profileData.roles.length} role{profileData.roles.length !== 1 ? 's' : ''}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

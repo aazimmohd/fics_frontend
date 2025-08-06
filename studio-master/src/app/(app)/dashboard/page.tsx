@@ -44,11 +44,24 @@ import {
 } from 'recharts';
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { DashboardSkeleton } from "@/components/dashboard/dashboard-skeleton";
+import { useTutorial } from "@/hooks/use-tutorial";
+import { TutorialOverlay } from "@/components/shared/tutorial-overlay";
+import { WelcomeBanner } from "@/components/shared/welcome-banner";
+import { ContextualTooltip, TOOLTIP_CONTENT } from "@/components/shared/contextual-tooltip";
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
 export default function DashboardPage() {
   const { stats, quickActions, loading, refreshing, refresh, lastUpdated } = useDashboardData(30000);
+  const { 
+    isTutorialVisible, 
+    onboardingData, 
+    startTutorial, 
+    closeTutorial, 
+    completeTutorial,
+    hasCompletedOnboarding,
+    hasCompletedTutorial
+  } = useTutorial();
 
   const handleRefresh = () => {
     refresh();
@@ -106,98 +119,116 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* Welcome Banner for new users */}
+      {hasCompletedOnboarding() && !hasCompletedTutorial() && onboardingData && (
+        <WelcomeBanner
+          onboardingData={onboardingData}
+          onDismiss={() => {}}
+          onStartTutorial={startTutorial}
+        />
+      )}
+
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between dashboard-header">
         <div>
           <h1 className="text-3xl font-bold tracking-tight font-headline">Dashboard</h1>
           <p className="text-muted-foreground mt-1">
             Real-time overview of your workflow automation platform
           </p>
         </div>
-                 <div className="flex items-center gap-3">
-           {lastUpdated && (
-             <div className="text-xs text-muted-foreground">
-               Last updated: {lastUpdated.toLocaleTimeString()}
-             </div>
-           )}
-           <Button
-             variant="outline"
-             size="sm"
-             onClick={handleRefresh}
-             disabled={refreshing}
-           >
-             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-             Refresh
-           </Button>
-           <Link href="/workflows" passHref>
-             <Button>
-               <PlusCircle className="mr-2 h-5 w-5" />
-               New Workflow
-             </Button>
-           </Link>
-         </div>
+        <div className="flex items-center gap-3">
+          {lastUpdated && (
+            <div className="text-xs text-muted-foreground">
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </div>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Link href="/workflows" passHref>
+            <Button>
+              <PlusCircle className="mr-2 h-5 w-5" />
+              New Workflow
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Quick Actions */}
       {quickActions.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {quickActions.map((action, index) => (
-            <Card key={index} className="shadow-lg rounded-lg border-l-4 border-l-red-500 hover:shadow-xl transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertTriangle className="h-4 w-4 text-red-500" />
-                      <Badge className={getPriorityColor(action.priority)}>
-                        {action.priority}
-                      </Badge>
+        <ContextualTooltip
+          content={TOOLTIP_CONTENT.QUICK_ACTIONS}
+          elementId="dashboard-quick-actions"
+        >
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {quickActions.map((action, index) => (
+              <Card key={index} className="shadow-lg rounded-lg border-l-4 border-l-red-500 hover:shadow-xl transition-shadow">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="h-4 w-4 text-red-500" />
+                        <Badge className={getPriorityColor(action.priority)}>
+                          {action.priority}
+                        </Badge>
+                      </div>
+                      <h3 className="font-semibold text-sm mb-1">{action.title}</h3>
+                      <p className="text-xs text-muted-foreground mb-3">{action.description}</p>
+                      <Link href={action.link}>
+                        <Button variant="outline" size="sm" className="w-full">
+                          Take Action
+                          <ArrowRight className="h-3 w-3 ml-1" />
+                        </Button>
+                      </Link>
                     </div>
-                    <h3 className="font-semibold text-sm mb-1">{action.title}</h3>
-                    <p className="text-xs text-muted-foreground mb-3">{action.description}</p>
-                    <Link href={action.link}>
-                      <Button variant="outline" size="sm" className="w-full">
-                        Take Action
-                        <ArrowRight className="h-3 w-3 ml-1" />
-                      </Button>
-                    </Link>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </ContextualTooltip>
       )}
 
       {/* Key Metrics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="shadow-lg rounded-lg hover:shadow-xl transition-shadow">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active Workflows</CardTitle>
-              <Workflow className="h-4 w-4 text-blue-500" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-3xl font-bold">{stats?.metrics.active_workflows.value || 0}</p>
-                                 <div className="flex items-center gap-1 mt-1">
-                   {(stats?.metrics.active_workflows.change || 0) > 0 ? (
-                     <TrendingUp className="h-3 w-3 text-green-500" />
-                   ) : (
-                     <TrendingDown className="h-3 w-3 text-red-500" />
-                   )}
-                   <p className="text-xs text-muted-foreground">
-                     +{stats?.metrics.active_workflows.change || 0} this week
-                   </p>
-                 </div>
+      <ContextualTooltip
+        content={TOOLTIP_CONTENT.DASHBOARD_METRICS}
+        elementId="dashboard-metrics"
+      >
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="shadow-lg rounded-lg hover:shadow-xl transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Active Workflows</CardTitle>
+                <Workflow className="h-4 w-4 text-blue-500" />
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Zap className="h-6 w-6 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-3xl font-bold">{stats?.metrics.active_workflows.value || 0}</p>
+                                   <div className="flex items-center gap-1 mt-1">
+                     {(stats?.metrics.active_workflows.change || 0) > 0 ? (
+                       <TrendingUp className="h-3 w-3 text-green-500" />
+                     ) : (
+                       <TrendingDown className="h-3 w-3 text-red-500" />
+                     )}
+                     <p className="text-xs text-muted-foreground">
+                       +{stats?.metrics.active_workflows.change || 0} this week
+                     </p>
+                   </div>
+                </div>
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Zap className="h-6 w-6 text-blue-600" />
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
         <Card className="shadow-lg rounded-lg hover:shadow-xl transition-shadow">
           <CardHeader className="pb-3">
@@ -275,6 +306,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      </ContextualTooltip>
 
       {/* Charts and Activity */}
       <div className="grid gap-6 lg:grid-cols-2">
@@ -387,6 +419,14 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        isVisible={isTutorialVisible}
+        onClose={closeTutorial}
+        onComplete={completeTutorial}
+        onboardingData={onboardingData}
+      />
     </div>
   );
 }

@@ -3,8 +3,9 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
-import { apiRequest, isTokenExpired, startTokenExpirationCheck, publicApiRequest, SessionExpiredError } from '@/lib/api';
+import { apiRequest, SessionExpiredError, isTokenExpired, startTokenExpirationCheck } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
+import { handleGoogleLogout, cleanGoogleLogout, isGoogleUser } from '@/lib/google-auth';
 
 interface User {
   id: string;
@@ -97,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       setTimeout(() => {
-        router.push('/auth/login');
+        router.push('/beta-enrollment');
       }, 2000);
       return;
     }
@@ -118,14 +119,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (token: string) => {
     localStorage.setItem('access_token', token);
+    setIsLoading(true); // Set loading to true before fetching profile
     await fetchUserProfile();
-    router.push('/');
+    router.push('/dashboard');
   };
 
-  const logout = () => {
+  const logout = async (forceRefresh: boolean = true) => {
+    // Clear local storage
     localStorage.removeItem('access_token');
     setUser(null);
     setIsAuthenticated(false);
+    setIsLoading(false); // Ensure loading state is reset on logout
+    
+    // Handle Google Sign-In logout
+    if (isGoogleUser()) {
+      try {
+        if (forceRefresh) {
+          await handleGoogleLogout();
+          return; // handleGoogleLogout will handle the redirect
+        } else {
+          await cleanGoogleLogout();
+        }
+      } catch (error) {
+        console.warn('Error during Google logout:', error);
+        // Fallback to normal logout if Google logout fails
+      }
+    }
     
     toast({
       title: "Logged Out",
@@ -133,7 +152,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       variant: "default",
     });
     
-    router.push('/auth/login');
+    router.push('/beta-enrollment');
   };
 
   const hasPermission = (permission: string): boolean => {

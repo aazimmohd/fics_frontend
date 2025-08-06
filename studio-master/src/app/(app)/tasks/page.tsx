@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { LayoutGrid, List, Filter, CalendarDays, MoreHorizontal, User, Plus, Clock, AlertCircle, CheckCircle2, FileText, WorkflowIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -75,42 +75,17 @@ const getTasks = async (): Promise<Task[]> => {
 };
 
 const updateTaskStatusAPI = async ({ taskId, status }: { taskId: string; status: Task['status'] }) => {
-  try {
-    const { api } = await import('@/lib/api');
-    console.log('Updating task:', { taskId, status });
-    
-    // Try the standard approach first
-    const response = await api.put(`/tasks/${taskId}`, { status });
-    console.log('Update response:', response);
-    return response;
-  } catch (error: any) {
-    console.error('API update error:', error);
-    
-    // If the standard approach fails, try direct axios call like the complete function
-    try {
-      const response = await axios.put(`http://127.0.0.1:8000/api/tasks/${taskId}`, 
-        { status }, 
-        {
-          headers: { 
-            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      console.log('Direct axios response:', response);
-      return response.data;
-    } catch (directError) {
-      console.error('Direct API call also failed:', directError);
-      throw error; // Throw the original error
-    }
-  }
+  const { api } = await import('@/lib/api');
+  console.log('Updating task:', { taskId, status });
+  
+  const response = await api.put(`/tasks/${taskId}`, { status });
+  console.log('Update response:', response);
+  return response;
 };
 
 const completeTaskAndResumeWorkflowAPI = async (taskId: string) => {
-  const { data } = await axios.post(`http://127.0.0.1:8000/api/tasks/${taskId}/complete`, {}, {
-    headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
-  });
-  return data;
+  const { api } = await import('@/lib/api');
+  return await api.post(`/tasks/${taskId}/complete`, {});
 };
 
 // --- MODERN TASK CARD COMPONENT ---

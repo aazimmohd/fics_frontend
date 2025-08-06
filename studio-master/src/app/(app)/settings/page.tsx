@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios, { AxiosError } from 'axios';
+import { AxiosError } from 'axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,13 +19,35 @@ interface DbConfig { id: string; config_name: string; db_type: string; host: str
 interface DbConfigCreate { config_name: string; db_type: string; host: string; port: number; username: string; database_name: string; password: string; }
 interface Credential { id: string; credential_name: string; }
 
-const API_URL = 'http://127.0.0.1:8000/api';
-const getDbConfigs = async (): Promise<DbConfig[]> => (await axios.get(`${API_URL}/database-configs`)).data;
-const createDbConfig = async (configData: DbConfigCreate) => (await axios.post(`${API_URL}/database-configs`, configData)).data;
-const testDbConfig = async (configData: DbConfigCreate) => (await axios.post(`${API_URL}/database-configs/test`, configData)).data;
-const getCredentials = async (): Promise<Credential[]> => (await axios.get(`${API_URL}/credentials`)).data;
-const createCredential = async (data: { credential_name: string; value: string }) => (await axios.post(`${API_URL}/credentials`, data)).data;
-const deleteCredential = async (id: string) => (await axios.delete(`${API_URL}/credentials/${id}`)).data;
+const getDbConfigs = async (): Promise<DbConfig[]> => {
+  const { api } = await import('@/lib/api');
+  return await api.get('/database-configs');
+};
+
+const createDbConfig = async (configData: DbConfigCreate) => {
+  const { api } = await import('@/lib/api');
+  return await api.post('/database-configs', configData);
+};
+
+const testDbConfig = async (configData: DbConfigCreate) => {
+  const { api } = await import('@/lib/api');
+  return await api.post('/database-configs/test', configData);
+};
+
+const getCredentials = async (): Promise<Credential[]> => {
+  const { api } = await import('@/lib/api');
+  return await api.get('/credentials');
+};
+
+const createCredential = async (data: { credential_name: string; value: string }) => {
+  const { api } = await import('@/lib/api');
+  return await api.post('/credentials', data);
+};
+
+const deleteCredential = async (id: string) => {
+  const { api } = await import('@/lib/api');
+  return await api.delete(`/credentials/${id}`);
+};
 
 type AddNewConnectionFormProps = {
   onSave: (data: DbConfigCreate) => void;

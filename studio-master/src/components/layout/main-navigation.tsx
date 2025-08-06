@@ -25,9 +25,11 @@ import {
   Users,
   FileSpreadsheet, // Added for submissions
   Bell, // Added for notifications test
+  Shield, // Added for beta management
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/context/AuthContext';
+import { Skeleton } from "@/components/ui/skeleton";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, permissions: [] },
@@ -40,15 +42,60 @@ const navItems = [
   { href: "/ai-generator", label: "AI Generator", icon: Sparkles, permissions: [], disabled: true, comingSoon: true },
   { href: "/settings", label: "Settings", icon: Settings, permissions: [] },
   { href: "/settings/users", label: "User Management", icon: Users, permissions: ["users:manage"] },
+  { href: "/settings/beta-management", label: "Beta Management", icon: Shield, permissions: ["beta:manage"] },
 ];
 
 export function MainNavigation() {
   const pathname = usePathname();
-  const { hasPermission, logout } = useAuth();
+  const { hasPermission, logout, isLoading, user, isAuthenticated } = useAuth();
 
   const handleLogout = () => {
     logout();
   };
+
+
+
+  // Show loading skeleton while authentication is loading or user data is not ready
+  if (isLoading || !user) {
+    return (
+      <>
+        <SidebarHeader className="border-b">
+          <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold md:text-base font-headline py-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2Z"></path><path d="M12 12v-2m0 4v2m-4-2h2m4 0h-2"></path></svg>
+            <span className="text-xl font-bold">FiCX</span>
+          </Link>
+        </SidebarHeader>
+        <SidebarContent className="flex-1 p-2">
+          <SidebarMenu>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <SidebarMenuItem key={index}>
+                <div className="flex items-center gap-3 p-2">
+                  <Skeleton className="h-5 w-5 rounded" />
+                  <Skeleton className="h-4 flex-1 rounded" />
+                </div>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter className="p-2 border-t">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <div className="flex items-center gap-3 p-2">
+                <Skeleton className="h-5 w-5 rounded" />
+                <Skeleton className="h-4 flex-1 rounded" />
+              </div>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <div className="flex items-center gap-3 p-2">
+                <Skeleton className="h-5 w-5 rounded" />
+                <Skeleton className="h-4 flex-1 rounded" />
+              </div>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </>
+    );
+  }
 
   return (
     <>
@@ -115,14 +162,21 @@ export function MainNavigation() {
       <SidebarFooter className="p-2 border-t">
         <SidebarMenu>
           <SidebarMenuItem>
-             <SidebarMenuButton
-              variant="default"
-              className="w-full justify-start hover:bg-accent/50"
-              tooltip={{ children: "Help & Support", side: "right", align: "center" }}
-            >
-              <HelpCircle className="mr-3 h-5 w-5" />
-              <span className="truncate group-data-[collapsible=icon]:hidden">Help & Support</span>
-            </SidebarMenuButton>
+            <Link href="/help" legacyBehavior passHref>
+              <SidebarMenuButton
+                variant="default"
+                className={cn(
+                  "w-full justify-start",
+                  pathname === "/help"
+                    ? "bg-accent text-accent-foreground"
+                    : "hover:bg-accent/50"
+                )}
+                tooltip={{ children: "Help & Support", side: "right", align: "center" }}
+              >
+                <HelpCircle className="mr-3 h-5 w-5" />
+                <span className="truncate group-data-[collapsible=icon]:hidden">Help & Support</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
