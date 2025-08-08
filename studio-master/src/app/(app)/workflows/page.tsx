@@ -42,7 +42,7 @@ const getWorkflows = async (): Promise<Workflow[]> => {
 
 // Function to fetch a single workflow by ID
 const getWorkflowById = async (id: string): Promise<Workflow> => {
-  const API_BASE_URL = 'http://127.0.0.1:8000/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
   const response = await axios.get(`${API_BASE_URL}/workflows/${id}`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
@@ -53,7 +53,7 @@ const getWorkflowById = async (id: string): Promise<Workflow> => {
 
 // NEW: API function for deleting a workflow
 const deleteWorkflowAPI = async (workflowId: string): Promise<void> => {
-  const API_BASE_URL = 'http://127.0.0.1:8000/api';
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
   await axios.delete(`${API_BASE_URL}/workflows/${workflowId}`, {
     headers: {
       'Authorization': `Bearer ${localStorage.getItem('access_token')}`,

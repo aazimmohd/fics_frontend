@@ -58,8 +58,10 @@ interface WorkflowSelection {
 }
 
 // --- API CALLS ---
-const API_URL = 'http://127.0.0.1:8000/api/intake-forms';
-const WORKFLOWS_API_URL = 'http://127.0.0.1:8000/api/workflows';
+// Use environment variable for API base URL with fallback for development
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = `${API_BASE_URL}/intake-forms`;
+const WORKFLOWS_API_URL = `${API_BASE_URL}/workflows`;
 
 const getForms = async (): Promise<IntakeForm[]> => {
   const { api } = await import('@/lib/api');

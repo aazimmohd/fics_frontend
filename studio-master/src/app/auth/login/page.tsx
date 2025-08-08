@@ -23,7 +23,10 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/auth/token', {
+      // Use environment variable for API base URL with fallback for development
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      
+      const response = await fetch(`${API_BASE_URL}/auth/token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -108,7 +111,10 @@ export default function LoginPage() {
             <GoogleSignInWrapper
               onSuccess={async (credentialResponse) => {
                 try {
-                  const response = await fetch('http://localhost:8000/api/auth/google-login', {
+                  // Use environment variable for API base URL with fallback for development
+                  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+                  
+                  const response = await fetch(`${API_BASE_URL}/auth/google-login`, {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',

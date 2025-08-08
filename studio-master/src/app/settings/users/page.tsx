@@ -48,11 +48,14 @@ export default function UserManagementPage() {
     password: '',
   });
 
+  // Use environment variable for API base URL with fallback for development
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
   const { data: users, isLoading, error } = useQuery<User[]>({ 
     queryKey: ['users'], 
     queryFn: async () => {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8000/api/users', {
+      const response = await fetch(`${API_BASE_URL}/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -68,7 +71,7 @@ export default function UserManagementPage() {
     queryKey: ['roles'], 
     queryFn: async () => {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8000/api/roles', {
+      const response = await fetch(`${API_BASE_URL}/roles`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -83,7 +86,7 @@ export default function UserManagementPage() {
   const inviteUserMutation = useMutation({
     mutationFn: async (newUser: InviteUserForm) => {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8000/api/users', {
+      const response = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,7 +121,7 @@ export default function UserManagementPage() {
   const assignRoleMutation = useMutation({
     mutationFn: async ({ userId, roleName }: { userId: string; roleName: string }) => {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://localhost:8000/api/users/${userId}/roles/${roleName}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/roles/${roleName}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -148,7 +151,7 @@ export default function UserManagementPage() {
   const removeRoleMutation = useMutation({
     mutationFn: async ({ userId, roleName }: { userId: string; roleName: string }) => {
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`http://localhost:8000/api/users/${userId}/roles/${roleName}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${userId}/roles/${roleName}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -23,7 +23,10 @@ export default function DebugApiPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost:8000/api/notifications/counts', {
+      // Use environment variable for API base URL with fallback for development
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      
+      const response = await fetch(`${API_BASE_URL}/notifications/counts`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

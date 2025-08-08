@@ -24,7 +24,10 @@ export default function BetaEnrollmentPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/beta-enrollment/register', {
+      // Use environment variable for API base URL with fallback for development
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      
+      const response = await fetch(`${API_BASE_URL}/beta-enrollment/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

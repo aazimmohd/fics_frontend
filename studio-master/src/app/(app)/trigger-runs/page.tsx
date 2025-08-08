@@ -15,15 +15,18 @@ interface WorkflowForRun { id: string; name: string; }
 interface TriggerRun { id: string; status: 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILED'; started_at: string; completed_at: string | null; workflow: WorkflowForRun; }
 interface LogEntry { id: string; message: string | null; status: 'Info' | 'Success' | 'Error'; timestamp: string; }
 
+// Use environment variable for API base URL with fallback for development
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
 const getTriggerRuns = async (): Promise<TriggerRun[]> => {
-  const response = await axios.get('http://127.0.0.1:8000/api/trigger-runs', {
+  const response = await axios.get(`${API_BASE_URL}/trigger-runs`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
   });
   return response.data;
 };
 
 const getLogsForRun = async (runId: string): Promise<LogEntry[]> => {
-  const response = await axios.get(`http://127.0.0.1:8000/api/trigger-runs/${runId}/logs`, {
+  const response = await axios.get(`${API_BASE_URL}/trigger-runs/${runId}/logs`, {
     headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
   });
   return response.data;

@@ -158,8 +158,10 @@ export default function OnboardingPage() {
       
       localStorage.setItem('ficx_onboarding_data', JSON.stringify(onboardingData));
 
-      // Update user profile
-      const response = await fetch(`http://localhost:8000/api/users/users/${user.id}`, {
+      // Use environment variable for API base URL with fallback for development
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      
+      const response = await fetch(`${API_BASE_URL}/users/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

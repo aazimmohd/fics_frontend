@@ -1,7 +1,8 @@
 import { jwtDecode } from 'jwt-decode';
 import { toast } from '@/hooks/use-toast';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+// Use environment variable for API base URL with fallback for development
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 interface JWTPayload {
   exp: number;

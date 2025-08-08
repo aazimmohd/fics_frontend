@@ -58,7 +58,8 @@ interface FormStep {
   fields: FormField[];
 }
 
-const API_URL = 'http://127.0.0.1:8000/api';
+// Use environment variable for API base URL with fallback for development
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 const getFormDefinition = async (formId: string): Promise<IntakeForm> => {
   const { data } = await axios.get(`${API_URL}/public/intake-forms/${formId}`);

@@ -14,7 +14,10 @@ export function TestDbConnectionButton({ configId }: TestDbConnectionButtonProps
     console.log('🔍 Testing database connection for configId:', configId);
     setIsLoading(true);
     
-    const promise = fetch(`http://127.0.0.1:8000/api/database-configs/${configId}/test`, {
+    // Use environment variable for API base URL with fallback for development
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    
+    const promise = fetch(`${API_BASE_URL}/database-configs/${configId}/test`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

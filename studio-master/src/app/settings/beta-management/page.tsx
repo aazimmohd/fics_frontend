@@ -44,11 +44,15 @@ export default function BetaManagementPage() {
     fetchEnrollments();
   }, [hasPermission]);
 
+  // Use environment variable for API base URL with fallback for development
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
   const fetchEnrollments = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/beta-enrollment/enrollments', {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_BASE_URL}/beta-enrollment/enrollments`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -70,10 +74,11 @@ export default function BetaManagementPage() {
 
     setIsProcessing(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/beta-enrollment/enrollments/${selectedEnrollment.id}/approve`, {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_BASE_URL}/beta-enrollment/enrollments/${selectedEnrollment.id}/approve`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ notes: approvalNotes }),
@@ -99,10 +104,11 @@ export default function BetaManagementPage() {
 
     setIsProcessing(true);
     try {
-      const response = await fetch(`http://localhost:8000/api/beta-enrollment/enrollments/${selectedEnrollment.id}/reject`, {
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${API_BASE_URL}/beta-enrollment/enrollments/${selectedEnrollment.id}/reject`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ notes: rejectionNotes }),

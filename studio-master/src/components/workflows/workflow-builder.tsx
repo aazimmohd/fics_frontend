@@ -189,7 +189,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
 
   // --- CREATE MUTATION (for POST) ---
   const createWorkflowAPI = async (workflowData: WorkflowCreate): Promise<Workflow> => {
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
     const { data } = await axios.post(`${API_BASE_URL}/workflows`, workflowData, {
       headers: {
         'Content-Type': 'application/json',
@@ -224,7 +224,7 @@ const WorkflowBuilder: React.FC<WorkflowBuilderProps> = ({
 
   // --- UPDATE MUTATION (for PUT) ---
   const updateWorkflowAPI = async ({ id, data }: { id: string, data: WorkflowUpdate }): Promise<Workflow> => {
-    const API_BASE_URL = 'http://127.0.0.1:8000/api';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
     const response = await axios.put(`${API_BASE_URL}/workflows/${id}`, data, {
       headers: {
         'Content-Type': 'application/json',
